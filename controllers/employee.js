@@ -1,6 +1,7 @@
 const httpStatus = require("http-status");
 const { ErrorHandler } = require("../utils/error-handler");
 const employeeService = require("../services/employee");
+const teamService = require("../services/team");
 
 exports.list = async (_, res, next) => {
   try {
@@ -15,7 +16,9 @@ exports.get = async (req, res, next) => {
   try {
     const employee = await employeeService.getEmployee(req.params.id);
     if (employee) {
-      res.status(httpStatus.OK).json(employee);
+      const team = await teamService.getTeam(employee.team_id);
+      const manager = await employeeService.getEmployee(employee.manager_id);
+      res.status(httpStatus.OK).json({ ...employee, team, manager });
     } else {
       throw new ErrorHandler(
         404,
@@ -57,6 +60,27 @@ exports.delete = async (req, res, next) => {
       throw ErrorHandler(
         httpStatus.NOT_FOUND,
         `Couldn't find this employee: ${req.params.id}`
+      );
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getTeam = async (req, res, next) => {
+  try {
+    const employee = await employeeService.getEmployee(req.params.id);
+    if (employee) {
+      if (employee.team_id) {
+        const team = await teamService.getTeam(employee.team_id);
+        res.status(httpStatus.OK).json(team);
+      } else {
+        res.status(httpStatus.OK).json({});
+      }
+    } else {
+      throw new ErrorHandler(
+        404,
+        `There is no employee with such id: ${req.params.id}`
       );
     }
   } catch (error) {

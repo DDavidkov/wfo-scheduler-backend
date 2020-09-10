@@ -20,11 +20,21 @@ router
 router
   .route("/approve/:id")
   .all(authController.authenticate())
-  .get(wfoRequestController.approve);
+  .put(wfoRequestController.approve);
 
 router
   .route("/employee/:id")
   .all(authController.authenticate())
   .get(wfoRequestController.getForEmployee);
+
+router
+  .route("/team/:id")
+  .all(authController.authenticate())
+  .get(wfoRequestController.getForTeam);
+
+router
+  .route("/availability/:teamId/:date")
+  .all(authController.authenticate())
+  .get(wfoRequestController.getAvailability);
 
 module.exports = router;

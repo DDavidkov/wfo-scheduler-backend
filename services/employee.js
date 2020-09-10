@@ -2,21 +2,32 @@ const db = require("../models");
 const Employee = db.Employee;
 
 exports.getEmployees = async () => {
-  const employees = await Employee.findAll();
+  const employees = await Employee.findAll({
+    attributes: { exclude: ["password"] }
+  });
 
   return employees;
 };
 
 exports.getEmployee = async (id) => {
-  const employee = await Employee.findByPk(id);
+  if (!id) {
+    return null;
+  } else {
+    const employee = await Employee.findByPk(id, {
+      attributes: { exclude: ["password"] },
+      raw: true
+    });
 
-  return employee;
+    return employee;
+  }
 };
 
 exports.createEmployee = async (employee) => {
   const newEmployee = await Employee.create(employee);
 
-  return newEmployee;
+  const { password, ...retVal } = newEmployee.dataValues;
+
+  return retVal;
 };
 
 exports.updateEmployee = async (id, employee) => {
@@ -26,7 +37,9 @@ exports.updateEmployee = async (id, employee) => {
     plain: true
   });
 
-  return updatedEmployee[1];
+  delete updatedEmployee[1].password;
+
+  return employee;
 };
 
 exports.deleteEmployee = async (id) => {
